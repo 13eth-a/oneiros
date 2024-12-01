@@ -15,20 +15,49 @@ import ReleaseCard from "../components/releaseCard";
 import Iterative from "../components/iterativeText";
 import Modal from "../components/modal";
 
-import { Release, featured } from "@/data/releasesData";
+import supabase from "@/utils/supabaseClient";
+
+type Release = {
+  name: string;
+  img: string;
+  logline: string | null;
+  description: string | null;
+  credits: string[] | null;
+  url: string | null;
+  embedplayer: string | null;
+  released: boolean | null;
+  descimgs: string[] | null;
+  artcreds: string[] | null;
+  featured: boolean;
+};
 
 
 
 export default function Home() {
-  // const breakpoint = useMediaQuery(('max-width: 900px'));
   const [windowWidth, setWindowWidth] = React.useState(901);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalRelease, setModalRelease] = React.useState<Release | null>(null);
-  const [modalImgIdx, setModalImgIdx] = React.useState(0);
+  const [featuredReleases, setFeaturedReleases] = React.useState<Release[]>([]);
 
+  
   React.useEffect(() => {
     setWindowWidth(window.innerWidth);
-  });
+
+    const fetchReleases = async () => {
+      const { data, error } = await supabase
+        .from('releases')
+        .select('*')
+        .eq('featured', true);
+
+      if (error) {
+        console.error("Error fetching releases:", error);
+      } else {
+        setFeaturedReleases(data || []);
+      }
+    };
+
+    fetchReleases();
+}, []);
 
   return (
     <>
@@ -131,7 +160,7 @@ export default function Home() {
             }}
           >
             <Grid container spacing={6}>
-              {featured.map((r, i) => {
+              {featuredReleases.map((r, i) => {
                 return (
                   <ReleaseCard
                     xs={12}
