@@ -9,11 +9,39 @@ import {
 } from "@mui/material";
 
 import Navbar from "../components/navbar";
-import { people } from "@/data/profilesData";
-
 import AboutCard from "../components/aboutCard";
 
+import supabase from "@/utils/supabaseClient";
+
+type Profile = {
+  name: string;
+  role: string | null;
+  img: string;
+  description: string | null;
+  alum: boolean;
+}
+
 export default function Team() {
+  const [profile, setProfile] = React.useState<Profile[]>([]);
+  
+  React.useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        let { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+
+        if (error) throw error;
+        setProfile(data || []);
+      } catch (error) {
+        console.error('Error obtaining profile data:', error);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
+
+
   return (
     <>
       <Navbar />
@@ -33,7 +61,7 @@ export default function Team() {
           </Typography>
           <Box sx={{ flexGrow: 1, marginY: 5 }}>
             <Grid container spacing={6}>
-              {people
+              {profile
                 .filter((p) => !p.alum)
                 .map((p, i) => {
                   return (
@@ -75,7 +103,7 @@ export default function Team() {
           </Typography>
           <Box sx={{ flexGrow: 1, marginY: 5 }}>
             <Grid container spacing={6}>
-              {people
+              {profile
                 .filter((p) => p.alum)
                 .map((p, i) => {
                   return (
