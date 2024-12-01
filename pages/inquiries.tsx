@@ -6,15 +6,48 @@ import * as React from "react";
 import Navbar from "../components/navbar";
 import Modal from "../components/modal";
 
-import { Release, releases } from "@/data/releasesData";
+import supabase from "@/utils/supabaseClient";
+
+
+type Release = {
+  name: string;
+  img: string;
+  logline: string | null;
+  description: string | null;
+  credits: string[] | null;
+  url: string | null;
+  embedplayer: string | null;
+  released: boolean | null;
+  descimgs: string[] | null;
+  artcreds: string[] | null;
+  featured: boolean;
+};
+
 
 export default function Releases() {
   const [windowWidth, setWindowWidth] = React.useState(0);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalRelease, setModalRelease] = React.useState<Release | null>(null);
+  const [releases, setReleases] = React.useState<Release[]>([]);
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
     setWindowWidth(window.innerWidth);
+
+    const fetchReleases = async () => {
+      const { data, error } = await supabase
+        .from('releases')
+        .select('*')
+        .eq('featured', true);
+
+      if (error) {
+        console.error("Error fetching releases:", error);
+      } else {
+        setReleases(data || []);
+      }
+    };
+
+    fetchReleases();
   }, []);
 
   return (
